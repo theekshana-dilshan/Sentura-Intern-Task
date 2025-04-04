@@ -1,34 +1,117 @@
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
 import './App.css'
 
 function App() {
-  const [count, setCount] = useState(0)
+    const [users, setUsers] = useState([]);
+    const [name, setName] = useState('');
+    const [email, setEmail] = useState('');
+    const [username, setUsername] = useState('');
+    const [message, setMessage] = useState('');
+    const [selectedUser, setSelectedUser] = useState(null);
+    const baseUrl = 'https://8015b5dbc0724d38882ac90397c27649.weavy.io';
+    const apiKey = "wys_hMWpXdekxcn9Gc8Ioah3azOllzUZ7l3HN9yB";
+
+    const getUsers = async () => {
+        try {
+            const response = await fetch(`${baseUrl}/users`, {
+                headers: {
+                    'Authorization': `Bearer ${apiKey}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            const data = await response.json();
+            setUsers(data.data || []);
+            setMessage('Users loaded!');
+        } catch (error) {
+            setMessage('Error: ' + error.message);
+        }
+    };
+
+    const createUser = async (e) => {
+        e.preventDefault();
+
+        try {
+            const userData = {
+                username: username,
+                email: email,
+                name: name,
+                directory: 'default'
+            };
+
+            const response = await fetch(`${baseUrl}/users`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${apiKey}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(userData)
+            });
+
+            const data = await response.json();
+            setUsers([...users, data]);
+            setMessage('User created!');
+
+            // Clear form
+            clearForm();
+        } catch (error) {
+            setMessage('Error: ' + error.message);
+        }
+    };
+
+    const clearForm = () => {
+        setName('');
+        setEmail('');
+        setUsername('');
+        setSelectedUser(null);
+    };
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+      <>
+          <div className="app">
+              <h1>Weavy User Management</h1>
+
+              <div className="api-setup">
+                  <button onClick={getUsers}>Load Users</button>
+              </div>
+          </div>
+
+          {message && <p className="message">{message}</p>}
+
+          <div className="create-user">
+              <h2>{selectedUser ? 'Update User' : 'Create User'}</h2>
+              <form onSubmit={selectedUser ? updateUser : createUser}>
+                  <input
+                      type="text"
+                      placeholder="Username"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      required
+                  />
+                  <input
+                      type="email"
+                      placeholder="Email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                  />
+                  <input
+                      type="text"
+                      placeholder="Name"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                  />
+                  <div>
+                      <button type="submit">
+                          {selectedUser ? 'Update User' : 'Create User'}
+                      </button>
+                      {selectedUser && (
+                          <button type="button" onClick={clearForm}>Cancel</button>
+                      )}
+                  </div>
+              </form>
+          </div>
+      </>
   )
 }
 
