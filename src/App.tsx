@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import {useEffect, useState} from 'react'
 import './App.css'
 
 interface User {
@@ -18,22 +18,23 @@ function App() {
     const baseUrl = 'https://8015b5dbc0724d38882ac90397c27649.weavy.io';
     const apiKey = "wys_hMWpXdekxcn9Gc8Ioah3azOllzUZ7l3HN9yB";
 
-    const getUsers = async () => {
-        try {
-            const response = await fetch(`${baseUrl}/users`, {
-                headers: {
-                    'Authorization': `Bearer ${apiKey}`,
-                    'Content-Type': 'application/json'
-                }
-            });
+    /*useEffect(() => {
+        const fetchUsers = async () => {
+            try {
+                const response = await fetch(`${baseUrl}/users`, {
+                    headers: {
+                        Authorization: `Bearer ${apiKey}`
+                    }
+                });
+                const data = await response.json();
+                setUsers(data);
+            } catch (error) {
+                setMessage('Error fetching users: ' + (error as Error).message);
+            }
+        };
 
-            const data = await response.json();
-            setUsers(data.data || []);
-            setMessage('Users loaded!');
-        } catch (error) {
-            setMessage('Error: ' + error.message);
-        }
-    };
+        fetchUsers();
+    }, []);*/
 
     const createUser = async (e) => {
         e.preventDefault();
@@ -56,6 +57,8 @@ function App() {
             });
 
             const data = await response.json();
+            console.log("Created user data:", data);
+
             setUsers([...users, data]);
             setMessage('User created!');
             clearForm();
@@ -141,10 +144,6 @@ function App() {
       <>
           <div className="app">
               <h1>Weavy User Management</h1>
-
-              <div className="api-setup">
-                  <button onClick={getUsers}>Load Users</button>
-              </div>
 
               {message && <p className="message">{message}</p>}
 
