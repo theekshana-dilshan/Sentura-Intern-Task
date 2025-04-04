@@ -58,8 +58,6 @@ function App() {
             const data = await response.json();
             setUsers([...users, data]);
             setMessage('User created!');
-
-            // Clear form
             clearForm();
         } catch (error) {
             setMessage('Error: ' + error.message);
@@ -89,18 +87,39 @@ function App() {
 
             const data = await response.json();
 
-            // Update the user in the list
             setUsers(users.map(user =>
                 user.id === selectedUser.id ? data : user
             ));
 
             setMessage('User updated!');
 
-            // Clear form and selection
             clearForm();
             setSelectedUser(null);
         } catch (error) {
             setMessage('Error: ' + error.message);
+        }
+    };
+
+    const deleteUser = async (userId: number | string) => {
+        try {
+            await fetch(`${baseUrl}/users/${userId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${apiKey}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            setUsers(users.filter(user => user.id !== userId));
+
+            if (selectedUser && selectedUser.id === userId) {
+                clearForm();
+                setSelectedUser(null);
+            }
+
+            setMessage('User deleted!');
+        } catch (error) {
+            setMessage('Error: ' + (error as Error).message);
         }
     };
 
@@ -174,6 +193,7 @@ function App() {
                                   <span>{user.name || user.username} ({user.email})</span>
                                   <div className="user-actions">
                                       <button onClick={() => selectUser(user)}>Edit</button>
+                                      <button onClick={() => deleteUser(user.id)}>Delete</button>
                                   </div>
                               </li>
                           ))}
